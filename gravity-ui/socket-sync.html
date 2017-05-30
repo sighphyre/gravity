@@ -1,0 +1,94 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+
+<!--
+`gravity-element`
+
+
+@demo demo/index.html
+-->
+
+<dom-module id="socket-sync">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>    
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'socket-sync',
+
+      properties: {
+        items: {
+          type: Array,
+          value: []
+        },
+        socket:{
+          type: Object
+        },
+        isOpen: {
+          type: Boolean,
+          value: false
+        },
+        token: ""
+      },
+      sendText(text) {
+        if (this.isOpen) {     
+            var message = {
+              message: text,
+              token: this.token
+            }
+            this.socket.send(JSON.stringify(message));
+            // this.push('items', text);            
+        } else {
+            console.log("Connection not opened.")
+        }
+      },  
+      requestToken(name){
+        console.log("GEttig", name)
+        if (this.isOpen) {     
+            var message = {
+              username: name,
+              password: "there"
+            }
+            this.socket.send(JSON.stringify(message));
+        } else {
+            console.log("Connection not opened.")
+        }
+      },
+      ready(){        
+        this.socket = new WebSocket("ws://127.0.0.1:9000");
+        this.socket.binaryType = "arraybuffer";
+
+        this.socket.onopen = function() {
+            console.log("Connected!");
+            this.isOpen = true;
+        }.bind(this);
+
+        this.socket.onmessage = function(e) {
+            if (typeof e.data == "string") {              
+              var message = JSON.parse(e.data);
+              if(message.type === "token"){
+                this.token = message.data;
+                console.log("GOT A TOKEN")
+              }
+              if(message.type === "update"){
+                this.push('items', message.data);
+              }                            
+            }
+        }.bind(this);
+
+        this.socket.onclose = function(e) {
+            console.log("Connection closed.");
+            this.socket = null;
+            this.isOpen = false;
+        }.bind(this);
+      }
+
+    });
+  </script>
+</dom-module>

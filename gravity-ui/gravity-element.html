@@ -1,0 +1,62 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="socket-sync.html">
+
+<!--
+`gravity-element`
+
+
+@demo demo/index.html
+-->
+
+<dom-module id="gravity-element">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>    
+    <template is="dom-repeat" items="[[history]]">
+      <p>[[item]]</p>
+    </template>
+    <paper-input label="username" value="{{name}}"></paper-input>    
+    <paper-input label="message" value="{{text}}"></paper-input>
+    <input type="button" value="request token" on-tap="requestToken">
+    <input type="button" value="hi there" on-tap="sendText">
+    <socket-sync id="sync" items="{{history}}"></socket-sync>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'gravity-element',
+
+      properties: {
+        history: {
+          type: Array,
+          value: []
+        },
+        socket:{
+          type: Object
+        },
+        name:{
+          type:String          
+        },
+        isOpen: {
+          type: Boolean,
+          value: false
+        },
+        text: {
+          type: String          
+        }
+      }, 
+      requestToken(){
+        console.log(this.$.sync.token)
+        this.$.sync.requestToken(this.name);
+      },
+      sendText(){        
+        this.$.sync.sendText(this.text);
+      }      
+    });
+  </script>
+</dom-module>
